@@ -4,7 +4,6 @@
 // and you should not need to change any other files in the project to complete the challenge
 
 import { useEffect, useState } from 'react';
-import { useAsync } from './useAsync';
 
 type UseCachingFetch = (url: string) => UseCachingFetchResponse;
 
@@ -33,7 +32,6 @@ export type UseCachingFetchResponse = {
  *
  */
 export const useCachingFetch: UseCachingFetch = (url) => {
-    // const { data, isLoading, error, run } = useAsync(null);
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState<unknown | null>(null);
     const [error, setError] = useState<Error | null>(null);
