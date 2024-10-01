@@ -3,6 +3,8 @@
 // However, you must not change the surface API presented from this file,
 // and you should not need to change any other files in the project to complete the challenge
 
+import { http } from 'msw';
+import { setupWorker } from 'msw/lib/browser';
 import { useEffect, useState } from 'react';
 
 type UseCachingFetch = (url: string) => UseCachingFetchResponse;
@@ -35,11 +37,11 @@ export const useCachingFetch: UseCachingFetch = (url) => {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState<unknown | null>(null);
     const [error, setError] = useState<Error | null>(null);
-
     useEffect(() => {
         const init = async () => {
             try {
                 const response = await fetch(url);
+                console.log('fetched!');
                 const stream = await getReadableStream(response);
                 const newResponse = new Response(stream);
                 const blob = await newResponse.blob();
@@ -51,22 +53,21 @@ export const useCachingFetch: UseCachingFetch = (url) => {
                 setIsLoading(false);
             }
         };
-        init();
+        if (data === null && error === null) {
+            init();
+        }
     }, []);
-
     const getReadableStream = async (response: Response) => {
         const reader = response.body?.getReader();
         return new ReadableStream({
             start(controller) {
                 return pump();
-
                 function pump() {
                     return reader?.read().then(({ done, value }) => {
                         if (done) {
                             controller.close();
                             return;
                         }
-
                         controller.enqueue(value);
                         return pump();
                     });
@@ -74,7 +75,6 @@ export const useCachingFetch: UseCachingFetch = (url) => {
             },
         });
     };
-
     return {
         data,
         isLoading,
